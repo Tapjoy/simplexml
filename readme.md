@@ -5,6 +5,8 @@ simplexml provides a simple API to read, create and manipulate XML documents at 
 
 [Documentation on GoDoc](https://godoc.org/github.com/kylewolfe/simplexml)
 
+[![Build Status](https://travis-ci.org/kylewolfe/simplexml.svg?branch=master)](https://travis-ci.org/kylewolfe/simplexml)
+
 **This package is currently in alpha and subject to change.**
 
 ## Roadmap
