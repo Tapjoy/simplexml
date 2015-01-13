@@ -3,6 +3,8 @@ simplexml
 
 simplexml provides a simple API to read, create and manipulate XML documents at run time in pure Go.
 
+[Documentation on GoDoc](https://godoc.org/github.com/kylewolfe/simplexml)
+
 **This package is currently in alpha and subject to change.**
 
 ## Roadmap
