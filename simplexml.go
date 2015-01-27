@@ -1,4 +1,4 @@
-// simplexml provides a simple API to read, write, edit and search XML documents at run time in pure Go.
+// Package simplexml provides a simple API to read, write, edit and search XML documents at run time in pure Go.
 package simplexml
 
 import (
@@ -10,12 +10,12 @@ import (
 	"strings"
 )
 
-// SimpleXMLElement is the base struct for reading, writing and manipulating XML documents.
-type SimpleXMLElement struct {
+// Element is the base struct for reading, writing and manipulating XML documents.
+type Element struct {
 	// Declaration is a string that is prepended to the element when using String().
 	Declaration string
 
-	// Name is a xml.Name for the current SimpleXMLElement.
+	// Name is a xml.Name for the current Element.
 	Name xml.Name
 
 	// Attributes is a slice of xml.Attr.
@@ -24,18 +24,18 @@ type SimpleXMLElement struct {
 	// PrettyXML determines whether to use new lines and tabs when true in String().
 	PrettyXML bool
 
-	// Children is a slice of SimpleXMLElement which represent it's inner contents. There should not be Children and a Value at
+	// Children is a slice of Element which represent it's inner contents. There should not be Children and a Value at
 	// the same time or String() will panic.
-	Children []*SimpleXMLElement
+	Children []*Element
 
-	// Value is the string value of the SimpleXMLElement. There should not be Children and a Value at
+	// Value is the string value of the Element. There should not be Children and a Value at
 	// the same time String() will panic.
 	Value string
 
 	// CDATA wraps the value with CDATA tags in when true String(). CDATA is ignored if the current element has Children.
 	CDATA bool
 
-	// Parents is useful to determine how far nested within a SimpleXMLElement the element is. Needed for PrettyXML.
+	// Parents is useful to determine how far nested within a Element the element is. Needed for PrettyXML.
 	Parents []xml.Name
 
 	// NSPrefixes is a map[string]string with the key being the namespace and the value being it's prefix used for converting full
@@ -43,8 +43,8 @@ type SimpleXMLElement struct {
 	NSPrefixes NSPrefixes
 }
 
-// SetValue sets SimpleXMLElement.Value but panics if the element already has children.
-func (e *SimpleXMLElement) SetValue(s string) *SimpleXMLElement {
+// SetValue sets Element.Value but panics if the element already has children.
+func (e *Element) SetValue(s string) *Element {
 	if len(e.Children) > 0 {
 		panic("tried setting value on an element with Children")
 	}
@@ -53,8 +53,8 @@ func (e *SimpleXMLElement) SetValue(s string) *SimpleXMLElement {
 	return e
 }
 
-// AddAttribute appends an attribute to the given SimpleXMLElement. AddAttribute returns it's self for function chaining.
-func (e *SimpleXMLElement) AddAttribute(attr xml.Attr) *SimpleXMLElement {
+// AddAttribute appends an attribute to the given Element. AddAttribute returns it's self for function chaining.
+func (e *Element) AddAttribute(attr xml.Attr) *Element {
 	// append the attribute
 	e.Attributes = append(e.Attributes, attr)
 
@@ -62,7 +62,7 @@ func (e *SimpleXMLElement) AddAttribute(attr xml.Attr) *SimpleXMLElement {
 }
 
 // AddNamespace is a wrapper to AddAttribute in addition to adding the prefix to NSPrefixes for conversion in String()
-func (e *SimpleXMLElement) AddNamespace(prefix string, namespace string) *SimpleXMLElement {
+func (e *Element) AddNamespace(prefix string, namespace string) *Element {
 	// init NSPrefixes if needed
 	if e.NSPrefixes == nil {
 		e.NSPrefixes = make(NSPrefixes)
@@ -79,20 +79,20 @@ func (e *SimpleXMLElement) AddNamespace(prefix string, namespace string) *Simple
 	return e
 }
 
-// AddChild adds a SimpleXMLElement to its Children, copying information about the parent down to the child. AddChild panics if the element already has a value.
-func (e *SimpleXMLElement) AddChild(name xml.Name) *SimpleXMLElement {
+// AddChild adds a Element to its Children, copying information about the parent down to the child. AddChild panics if the element already has a value.
+func (e *Element) AddChild(name xml.Name) *Element {
 	if e.Value != "" {
 		panic("tried adding child on an element with non empty Value")
 	}
 
-	n := &SimpleXMLElement{Name: name, PrettyXML: e.PrettyXML, Parents: append(e.Parents, e.Name), NSPrefixes: e.NSPrefixes}
+	n := &Element{Name: name, PrettyXML: e.PrettyXML, Parents: append(e.Parents, e.Name), NSPrefixes: e.NSPrefixes}
 	e.Children = append(e.Children, n)
 	return n
 }
 
-// RemoveChild takes a pointer to a SimpleXMLElement and removes it from the current SimpleXMLElement's Children recursively. RemoveChild
+// RemoveChild takes a pointer to a Element and removes it from the current Element's Children recursively. RemoveChild
 // will return an error if the memory address was not found.
-func (e *SimpleXMLElement) RemoveChild(sxml *SimpleXMLElement) error {
+func (e *Element) RemoveChild(sxml *Element) error {
 	found := false
 	for k, v := range e.Children {
 		if v == sxml {
@@ -110,8 +110,8 @@ func (e *SimpleXMLElement) RemoveChild(sxml *SimpleXMLElement) error {
 	return nil
 }
 
-// AllChildren returns a single slice of SimpleXMLElement of it's children at any depth
-func (e *SimpleXMLElement) AllChildren() []*SimpleXMLElement {
+// AllChildren returns a single slice of Element of it's children at any depth
+func (e *Element) AllChildren() []*Element {
 	res := e.Children
 
 	for _, v := range e.Children {
@@ -121,9 +121,9 @@ func (e *SimpleXMLElement) AllChildren() []*SimpleXMLElement {
 	return res
 }
 
-// SetPrettyXML sets the PrettyXML indicator for the SimpleXMLElement and all of it's children recursively. SetPrettyXML returns
+// SetPrettyXML sets the PrettyXML indicator for the Element and all of it's children recursively. SetPrettyXML returns
 // its self for function chaining.
-func (e *SimpleXMLElement) SetPrettyXML(b bool) *SimpleXMLElement {
+func (e *Element) SetPrettyXML(b bool) *Element {
 	e.PrettyXML = b
 	for _, v := range e.AllChildren() {
 		v.PrettyXML = b
@@ -132,12 +132,12 @@ func (e *SimpleXMLElement) SetPrettyXML(b bool) *SimpleXMLElement {
 }
 
 // String prepares the xml document like xml.Marshal.
-func (e SimpleXMLElement) String() string {
+func (e Element) String() string {
 	var s string
 	var prefix string
 	var suffix string
 
-	// panic on bad SimpleXMLElement
+	// panic on bad Element
 	if e.Value != "" && len(e.Children) > 0 {
 		panic("have both a non empty Value and Children")
 	}
@@ -188,13 +188,13 @@ func (e SimpleXMLElement) String() string {
 	return s
 }
 
-// Search returns a new SimpleXMLSearch from the current SimpleXMLElement. This is useful for function chaining.
-func (e *SimpleXMLElement) Search() SimpleXMLSearch {
-	return SimpleXMLSearch{e}
+// Search returns a new Search from the current Element. This is useful for function chaining.
+func (e *Element) Search() Search {
+	return Search{e}
 }
 
 // XPath returns the xpath representation of the current element from it's root element.
-func (e SimpleXMLElement) XPath() string {
+func (e Element) XPath() string {
 	str := []string{}
 
 	// add parents to path
@@ -225,19 +225,19 @@ func (p NSPrefixes) GetPrefix(ns string) string {
 	return p[ns]
 }
 
-// New returns a blank SimpleXMLElement with the given element name. Declaration is set to
+// New returns a blank Element with the given element name. Declaration is set to
 // '<?xml version=\"1.0\" encoding=\"UTF-8\"?>' by New()
-func New(name xml.Name) *SimpleXMLElement {
-	return &SimpleXMLElement{Name: name, Declaration: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", NSPrefixes: make(NSPrefixes)}
+func New(name xml.Name) *Element {
+	return &Element{Name: name, Declaration: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n", NSPrefixes: make(NSPrefixes)}
 }
 
-// NewFromReader creates a new SimpleXMLElement from an existing XML document
-func NewFromReader(r io.Reader) (*SimpleXMLElement, error) {
+// NewFromReader creates a new Element from an existing XML document
+func NewFromReader(r io.Reader) (*Element, error) {
 	// TODO: CDATA from reader
 
-	var root *SimpleXMLElement
+	var root *Element
 	var declaration string
-	tree := []*SimpleXMLElement{}
+	tree := []*Element{}
 
 	// start up a new xml decoder
 	d := xml.NewDecoder(r)
@@ -254,7 +254,7 @@ func NewFromReader(r io.Reader) (*SimpleXMLElement, error) {
 		switch t := tok.(type) {
 		case xml.StartElement:
 			start = t.Copy()
-			var n *SimpleXMLElement
+			var n *Element
 
 			if len(tree) == 0 {
 				// create out first element and set it as root
@@ -306,12 +306,12 @@ func NewFromReader(r io.Reader) (*SimpleXMLElement, error) {
 	return root, nil
 }
 
-// SimpleXMLSearch is a simplexml.SimpleXMLElement that has search capabilities
-type SimpleXMLSearch []*SimpleXMLElement
+// Search is a simplexml.Element that has search capabilities
+type Search []*Element
 
-// MatchName returns a new SimpleXMLSearch where the supplied xml.Name matches the SimpleXMLSearch.Children()
-func (sxmls SimpleXMLSearch) MatchName(name xml.Name) SimpleXMLSearch {
-	r := SimpleXMLSearch{}
+// MatchName returns a new Search where the supplied xml.Name matches the Search.Children()
+func (sxmls Search) MatchName(name xml.Name) Search {
+	r := Search{}
 
 	// search the top level elements
 	for _, v := range sxmls {
@@ -323,9 +323,9 @@ func (sxmls SimpleXMLSearch) MatchName(name xml.Name) SimpleXMLSearch {
 	return r
 }
 
-// MatchNameDeep returns a new SimpleXMLSearch where the supplied xml.Name matches the SimpleXMLSearch.AllChildren()
-func (sxmls SimpleXMLSearch) MatchNameDeep(name xml.Name) SimpleXMLSearch {
-	r := SimpleXMLSearch{}
+// MatchNameDeep returns a new Search where the supplied xml.Name matches the Search.AllChildren()
+func (sxmls Search) MatchNameDeep(name xml.Name) Search {
+	r := Search{}
 
 	for _, v := range sxmls {
 		// search the top level elements
@@ -345,9 +345,9 @@ func (sxmls SimpleXMLSearch) MatchNameDeep(name xml.Name) SimpleXMLSearch {
 	return r
 }
 
-// MatchAttr returns a new SimpleXMLSearch where the supplied xml.Attr matches the SimpleXMLSearch.Children()
-func (sxmls SimpleXMLSearch) MatchAttr(attr xml.Attr) SimpleXMLSearch {
-	r := SimpleXMLSearch{}
+// MatchAttr returns a new Search where the supplied xml.Attr matches the Search.Children()
+func (sxmls Search) MatchAttr(attr xml.Attr) Search {
+	r := Search{}
 
 	// search the top level elements
 	for _, v := range sxmls {
@@ -362,9 +362,9 @@ func (sxmls SimpleXMLSearch) MatchAttr(attr xml.Attr) SimpleXMLSearch {
 	return r
 }
 
-// MatchAttrDeep returns a new SimpleXMLSearch where the supplied xml.Attr matches the SimpleXMLSearch.AllChildren()
-func (sxmls SimpleXMLSearch) MatchAttrDeep(attr xml.Attr) SimpleXMLSearch {
-	r := SimpleXMLSearch{}
+// MatchAttrDeep returns a new Search where the supplied xml.Attr matches the Search.AllChildren()
+func (sxmls Search) MatchAttrDeep(attr xml.Attr) Search {
+	r := Search{}
 
 	// search the top level elements
 	for _, v := range sxmls {
@@ -389,8 +389,8 @@ func (sxmls SimpleXMLSearch) MatchAttrDeep(attr xml.Attr) SimpleXMLSearch {
 	return r
 }
 
-// One returns the top result off of a SimpleXMLSearch
-func (sxmls SimpleXMLSearch) One() *SimpleXMLElement {
+// One returns the top result off of a Search
+func (sxmls Search) One() *Element {
 	if len(sxmls) > 0 {
 		return sxmls[0]
 	}

@@ -60,8 +60,8 @@ const soapstring = `<?xml version="1.0" encoding="utf-8"?>
 `
 
 func TestValues(t *testing.T) {
-	Convey("Given a SimpleXMLElement of 'Foo' and space of 'foo.local' prefix 'n1'", t, func() {
-		sxml := &SimpleXMLElement{Name: xml.Name{Local: "Foo", Space: "foo.local"}}
+	Convey("Given a Element of 'Foo' and space of 'foo.local' prefix 'n1'", t, func() {
+		sxml := &Element{Name: xml.Name{Local: "Foo", Space: "foo.local"}}
 		sxml.AddNamespace("n1", "foo.local")
 		sxml.Declaration = ""
 
@@ -92,7 +92,7 @@ func TestValues(t *testing.T) {
 }
 
 func TestChildren(t *testing.T) {
-	Convey("Given a SimpleXMLElement of 'Foo' and space of 'foo.local'", t, func() {
+	Convey("Given a Element of 'Foo' and space of 'foo.local'", t, func() {
 		sxml := New(xml.Name{Local: "Foo", Space: "foo.local"})
 		sxml.AddNamespace("n1", "foo.local")
 		sxml.Declaration = ""
@@ -144,7 +144,7 @@ func TestChildren(t *testing.T) {
 }
 
 func TestAttr(t *testing.T) {
-	Convey("Given an empty SimpleXMLElement of 'Foo'", t, func() {
+	Convey("Given an empty Element of 'Foo'", t, func() {
 		sxml := New(xml.Name{Local: "Foo"})
 		sxml.Declaration = ""
 
@@ -212,7 +212,7 @@ func TestNewFromReaderBad(t *testing.T) {
 			So(err.Error(), ShouldEqual, "malformed document")
 		})
 
-		Convey("The SimpleXMLElement should be nil'", func() {
+		Convey("The Element should be nil'", func() {
 			So(sxml, ShouldBeNil)
 		})
 	})
@@ -221,7 +221,7 @@ func TestNewFromReaderBad(t *testing.T) {
 func TestMatchName(t *testing.T) {
 	Convey("Given a new element of Foo", t, func() {
 		sxml := New(xml.Name{Local: "Foo"})
-		s := SimpleXMLSearch{sxml}
+		s := Search{sxml}
 
 		Convey("MatchName for Foo should return 1 result", func() {
 			res := s.MatchName(xml.Name{Local: "Foo"})
@@ -261,7 +261,7 @@ func TestMatchName(t *testing.T) {
 func TestMatchAttr(t *testing.T) {
 	Convey("Given a new element of Foo", t, func() {
 		sxml := New(xml.Name{Local: "Foo"})
-		s := SimpleXMLSearch{sxml}
+		s := Search{sxml}
 
 		Convey("And given a bar attribute equal to baz", func() {
 			sxml.Attributes = append(sxml.Attributes, xml.Attr{Name: xml.Name{Local: "bar"}, Value: "baz"})
