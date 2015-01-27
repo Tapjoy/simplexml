@@ -13,13 +13,13 @@ simplexml provides a simple API to read, create and manipulate XML documents at 
 
 - ☑ Basic xml creation, updates
 - ☑ Basic xml search
-- ☑ New SimpleXMLElement from io.Reader
+- ☑ New Element from io.Reader
 - ☑ Reuse portions of encoding/xml when possible
 - ☑ CDATA support (through API)
 - ☐ CDATA support from an io.Reader
 - ☑ Pretty XML (formatted with new lines and tabs)
 - ☐ Comment support
-- ☐ Unmarshal support with used/unused key results (can still use encoding/xml.Unmarshal with SimpleXMLElement.String())
+- ☐ Unmarshal support with used/unused key results (can still use encoding/xml.Unmarshal with Element.String())
 - ☐ xpath search
 
 ## Usage
