@@ -5,9 +5,10 @@ import (
 	"testing"
 
 	"encoding/xml"
+	"strings"
+
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 const xmlstring = `<?xml version="1.0" encoding="utf-8"?>
@@ -66,7 +67,7 @@ func TestValues(t *testing.T) {
 		sxml.Declaration = ""
 
 		Convey("Given a string value of 'bar'", func() {
-			sxml.SetValue("bar")
+			sxml.Value = "bar"
 
 			Convey("AddChild() should panic", func() {
 				So(func() { sxml.AddChild(xml.Name{Local: "baz"}) }, ShouldPanic)
@@ -100,10 +101,6 @@ func TestChildren(t *testing.T) {
 		Convey("Given a child element of 'Bar'", func() {
 			sxml.AddChild(xml.Name{Local: "Bar"})
 
-			Convey("SetValue() should panic on the parent", func() {
-				So(func() { sxml.SetValue("baz") }, ShouldPanic)
-			})
-
 			Convey("Given a manual set of Value", func() {
 				sxml.Value = "bar"
 
@@ -113,7 +110,7 @@ func TestChildren(t *testing.T) {
 			})
 
 			Convey("Given a value of 'baz' for the new child element", func() {
-				sxml.Children[0].SetValue("baz")
+				sxml.Children[0].Value = "baz"
 
 				Convey("String() of the parent should equal '<n1:Foo xmlns:n1=\"foo.local\"><Bar>baz</Bar></n1:Foo>'", func() {
 					So(sxml.String(), ShouldEqual, "<n1:Foo xmlns:n1=\"foo.local\"><Bar>baz</Bar></n1:Foo>")
@@ -218,72 +215,65 @@ func TestNewFromReaderBad(t *testing.T) {
 	})
 }
 
-func TestMatchName(t *testing.T) {
-	Convey("Given a new element of Foo", t, func() {
-		sxml := New(xml.Name{Local: "Foo"})
-		s := Search{sxml}
+func TestSearch(t *testing.T) {
+	Convey("Given a new Element 'Foo' and a Search of Foo", t, func() {
+		foo := New(xml.Name{Local: "Foo"})
+		searchFoo := foo.Search()
 
-		Convey("MatchName for Foo should return 1 result", func() {
-			res := s.MatchName(xml.Name{Local: "Foo"})
-
-			So(len(res), ShouldEqual, 1)
+		Convey("MatchParentName for Foo should return 1 result", func() {
+			So(len(searchFoo.MatchParentName(xml.Name{Local: "Foo"})), ShouldEqual, 1)
 		})
 
-		Convey("Given two children of Bar to Foo", func() {
-			sxml.AddChild(xml.Name{Local: "Bar"})
-			sxml.AddChild(xml.Name{Local: "Bar"})
+		Convey("MatchChildName for Foo should return 0 results", func() {
+			So(len(searchFoo.MatchChildName(xml.Name{Local: "Foo"})), ShouldEqual, 0)
+		})
 
-			Convey("MatchName for Bar should return 0 results", func() {
-				So(len(s.MatchName(xml.Name{Local: "Bar"})), ShouldEqual, 0)
-			})
+		Convey("Given an attribute of type=foo", func() {
+			foo.AddAttribute(xml.Attr{Name: xml.Name{Local: "type"}, Value: "foo"})
 
-			Convey("MatchNameDeep for Bar should return 2 results", func() {
-				So(len(s.MatchNameDeep(xml.Name{Local: "Bar"})), ShouldEqual, 2)
-			})
-
-			Convey("Given another child of Bar to one of the Bar elements", func() {
-				sxml.Children[0].AddChild(xml.Name{Local: "Bar"})
-
-				Convey("MatchNameDeep for Bar should return 3 results", func() {
-					So(len(s.MatchNameDeep(xml.Name{Local: "Bar"})), ShouldEqual, 3)
-				})
+			Convey("MatchParentAttr should return 1 result", func() {
+				So(len(searchFoo.MatchParentAttr(xml.Attr{Name: xml.Name{Local: "type"}, Value: "foo"})), ShouldEqual, 1)
 			})
 		})
 
-		Convey("MatchName for Foo2 should return 0 results", func() {
-			res := s.MatchName(xml.Name{Local: "Foo2"})
+		Convey("Given a child element of 'Bar'", func() {
+			bar := foo.AddChild(xml.Name{Local: "Bar"})
 
-			So(len(res), ShouldEqual, 0)
-		})
-	})
-}
-
-func TestMatchAttr(t *testing.T) {
-	Convey("Given a new element of Foo", t, func() {
-		sxml := New(xml.Name{Local: "Foo"})
-		s := Search{sxml}
-
-		Convey("And given a bar attribute equal to baz", func() {
-			sxml.Attributes = append(sxml.Attributes, xml.Attr{Name: xml.Name{Local: "bar"}, Value: "baz"})
-
-			Convey("MatchAttr() should return 1 result", func() {
-				So(len(s.MatchAttr(xml.Attr{Name: xml.Name{Local: "bar"}, Value: "baz"})), ShouldEqual, 1)
+			Convey("MatchParentName(Foo).MatchChildName(Bar) from Foo should return 1 result", func() {
+				So(len(searchFoo.MatchParentName(xml.Name{Local: "Foo"}).MatchChildName(xml.Name{Local: "Bar"})), ShouldEqual, 1)
 			})
 
-			Convey("MatchAttr() for a different value should return 0 results", func() {
-				So(len(s.MatchAttr(xml.Attr{Name: xml.Name{Local: "bar"}, Value: "notbaz"})), ShouldEqual, 0)
-			})
+			Convey("Given an attribute of type=bar", func() {
+				bar.AddAttribute(xml.Attr{Name: xml.Name{Local: "type"}, Value: "bar"})
 
-			Convey("Given a child element of Bar to Foo with the same attribute", func() {
-				sxml.AddChild(xml.Name{Local: "Bar"})
-				sxml.Children[0].Attributes = append(sxml.Children[0].Attributes, xml.Attr{Name: xml.Name{Local: "bar"}, Value: "baz"})
-
-				Convey("MatchAttr() should return 1 result", func() {
-					So(len(s.MatchAttr(xml.Attr{Name: xml.Name{Local: "bar"}, Value: "baz"})), ShouldEqual, 1)
+				Convey("MatchParentAttr should return 0 results", func() {
+					So(len(searchFoo.MatchParentAttr(xml.Attr{Name: xml.Name{Local: "type"}, Value: "bar"})), ShouldEqual, 0)
 				})
 
-				Convey("MatchAttrDeep() should return 2 results", func() {
-					So(len(s.MatchAttrDeep(xml.Attr{Name: xml.Name{Local: "bar"}, Value: "baz"})), ShouldEqual, 2)
+				Convey("MatchChildAttr should return 1 result", func() {
+					So(len(searchFoo.MatchChildAttr(xml.Attr{Name: xml.Name{Local: "type"}, Value: "bar"})), ShouldEqual, 1)
+				})
+			})
+
+			Convey("Given two children of 'Baz'", func() {
+				baz1 := bar.AddChild(xml.Name{Local: "Baz"})
+				baz2 := bar.AddChild(xml.Name{Local: "Baz"})
+
+				Convey("Given an attribute of type=baz", func() {
+					baz1.AddAttribute(xml.Attr{Name: xml.Name{Local: "type"}, Value: "baz"})
+					baz2.AddAttribute(xml.Attr{Name: xml.Name{Local: "type"}, Value: "baz"})
+
+					Convey("MatchParentAttr should return 0 results", func() {
+						So(len(searchFoo.MatchParentAttr(xml.Attr{Name: xml.Name{Local: "type"}, Value: "baz"})), ShouldEqual, 0)
+					})
+
+					Convey("MatchChildAttr should return 0 results", func() {
+						So(len(searchFoo.MatchChildAttr(xml.Attr{Name: xml.Name{Local: "type"}, Value: "baz"})), ShouldEqual, 0)
+					})
+				})
+
+				Convey("MatchChildNameDeep from Foo should return 2 results", func() {
+					So(len(searchFoo.MatchChildNameDeep(xml.Name{Local: "Baz"})), ShouldEqual, 2)
 				})
 			})
 		})
@@ -341,23 +331,6 @@ func ExampleNewFromReader() {
 		panic(err)
 	}
 
-	// find book elements
-	books := sxml.Search().MatchNameDeep(xml.Name{Space: "api.books.localhost", Local: "books"})
-
-	// match id from books, add type
-	books.MatchAttr(
-		xml.Attr{
-			Name:  xml.Name{Local: "id"},
-			Value: "1",
-		}).One().AddChild(xml.Name{Local: "type"}).Value = "Fiction"
-
-	// match id from books, remove the element
-	sxml.RemoveChild(books.MatchAttr(
-		xml.Attr{
-			Name:  xml.Name{Local: "id"},
-			Value: "2",
-		}).One())
-
 	// set pretty flag on all elements
 	sxml.SetPrettyXML(true)
 
@@ -371,7 +344,59 @@ func ExampleNewFromReader() {
 	//	</b:books>
 	//	<b:books id="1">
 	//		<name>Book Title 1</name>
-	//		<type>Fiction</type>
+	//	</b:books>
+	//	<b:books id="2">
+	//		<name>Book Title 2</name>
 	//	</b:books>
 	//</Catalog>
+}
+
+func ExampleMatch() {
+	s := `<?xml version="1.0" encoding="UTF-8"?>
+<Catalog xmlns:b="api.books.localhost">
+	<b:done>true</b:done>
+	<b:books id="0">
+		<name>Book Title 0</name>
+	</b:books>
+	<b:books id="1">
+		<name>Book Title 1</name>
+	</b:books>
+	<b:books id="2">
+		<name>Book Title 2</name>
+	</b:books>
+</Catalog>`
+
+	// create simplexml from reader
+	sxml, err := NewFromReader(strings.NewReader(s))
+	if err != nil {
+		panic(err)
+	}
+
+	// get books with id of 1
+	fmt.Println(len(sxml.Search().MatchParentName(
+		xml.Name{
+			Local: "Catalog",
+		},
+	).MatchChildName(
+		xml.Name{
+			Local: "books",
+			Space: "api.books.localhost",
+		},
+	).MatchParentAttr(
+		xml.Attr{
+			Name:  xml.Name{Local: "id"},
+			Value: "2",
+		})))
+
+	// or more quickly
+
+	fmt.Println(len(sxml.Search().MatchChildAttrDeep(
+		xml.Attr{
+			Name:  xml.Name{Local: "id"},
+			Value: "2",
+		})))
+
+	//Output:
+	//1
+	//1
 }

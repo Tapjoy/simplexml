@@ -43,16 +43,6 @@ type Element struct {
 	NSPrefixes NSPrefixes
 }
 
-// SetValue sets Element.Value but panics if the element already has children.
-func (e *Element) SetValue(s string) *Element {
-	if len(e.Children) > 0 {
-		panic("tried setting value on an element with Children")
-	}
-
-	e.Value = s
-	return e
-}
-
 // AddAttribute appends an attribute to the given Element. AddAttribute returns it's self for function chaining.
 func (e *Element) AddAttribute(attr xml.Attr) *Element {
 	// append the attribute
@@ -306,14 +296,13 @@ func NewFromReader(r io.Reader) (*Element, error) {
 	return root, nil
 }
 
-// Search is a simplexml.Element that has search capabilities
+// Search is a slice of Element
 type Search []*Element
 
-// MatchName returns a new Search where the supplied xml.Name matches the Search.Children()
-func (sxmls Search) MatchName(name xml.Name) Search {
+// MatchParentName returns a new Search of elements where the Parent element matches the given xml.Name
+func (sxmls Search) MatchParentName(name xml.Name) Search {
 	r := Search{}
 
-	// search the top level elements
 	for _, v := range sxmls {
 		if v.Name.Local == name.Local && v.Name.Space == name.Space {
 			r = append(r, v)
@@ -323,30 +312,38 @@ func (sxmls Search) MatchName(name xml.Name) Search {
 	return r
 }
 
-// MatchNameDeep returns a new Search where the supplied xml.Name matches the Search.AllChildren()
-func (sxmls Search) MatchNameDeep(name xml.Name) Search {
+// MatchChildName returns a new Search of elements where the child element matches the given xml.Name
+func (sxmls Search) MatchChildName(name xml.Name) Search {
 	r := Search{}
 
 	for _, v := range sxmls {
-		// search the top level elements
-		if v.Name.Local == name.Local && v.Name.Space == name.Space {
-			r = append(r, v)
+		for _, v2 := range v.Children {
+			if v2.Name.Local == name.Local && v2.Name.Space == name.Space {
+				r = append(r, v2)
+			}
 		}
+	}
 
-		// search all its children
+	return r
+}
+
+// MatchChildNameDeep returns a new Search of elements where the child element matches the given xml.Name at any level
+func (sxmls Search) MatchChildNameDeep(name xml.Name) Search {
+	r := Search{}
+
+	for _, v := range sxmls {
 		for _, v2 := range v.AllChildren() {
 			if v2.Name.Local == name.Local && v2.Name.Space == name.Space {
 				r = append(r, v2)
 			}
-
 		}
 	}
 
 	return r
 }
 
-// MatchAttr returns a new Search where the supplied xml.Attr matches the Search.Children()
-func (sxmls Search) MatchAttr(attr xml.Attr) Search {
+// MatchParentAttr returns a new Search of elements where the parent element matches the given xml.Attr
+func (sxmls Search) MatchParentAttr(attr xml.Attr) Search {
 	r := Search{}
 
 	// search the top level elements
@@ -362,20 +359,29 @@ func (sxmls Search) MatchAttr(attr xml.Attr) Search {
 	return r
 }
 
-// MatchAttrDeep returns a new Search where the supplied xml.Attr matches the Search.AllChildren()
-func (sxmls Search) MatchAttrDeep(attr xml.Attr) Search {
+// MatchChildAttr returns a new Search of elements where the child element matches the given xml.Attr
+func (sxmls Search) MatchChildAttr(attr xml.Attr) Search {
 	r := Search{}
 
-	// search the top level elements
 	for _, v := range sxmls {
-		for _, a := range v.Attributes {
-			if a.Value == attr.Value && a.Name.Local == attr.Name.Local && a.Name.Space == attr.Name.Space {
-				r = append(r, v)
-				break
+		for _, v2 := range v.Children {
+			for _, a := range v2.Attributes {
+				if a.Value == attr.Value && a.Name.Local == attr.Name.Local && a.Name.Space == attr.Name.Space {
+					r = append(r, v2)
+					break
+				}
 			}
 		}
+	}
 
-		// search all its children
+	return r
+}
+
+// MatchChildAttrDeep returns a new Search of elements where the child element matches the given xml.Attr at any level
+func (sxmls Search) MatchChildAttrDeep(attr xml.Attr) Search {
+	r := Search{}
+
+	for _, v := range sxmls {
 		for _, v2 := range v.AllChildren() {
 			for _, a := range v2.Attributes {
 				if a.Value == attr.Value && a.Name.Local == attr.Name.Local && a.Name.Space == attr.Name.Space {
