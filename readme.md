@@ -1,4 +1,4 @@
-simplexml [![Build Status](https://travis-ci.org/kylewolfe/simplexml.svg?branch=master)](https://travis-ci.org/kylewolfe/simplexml) [![GoDoc](http://godoc.org/github.com/kylewolfe/simplexml?status.svg)](http://godoc.org/github.com/kylewolfe/simplexml) 
+simplexml [![Build Status](https://travis-ci.org/kylewolfe/simplexml.svg?branch=master)](https://travis-ci.org/kylewolfe/simplexml) [![Coverage Status](https://coveralls.io/repos/kylewolfe/simplexml/badge.svg)](https://coveralls.io/r/kylewolfe/simplexml) [![GoDoc](http://godoc.org/github.com/kylewolfe/simplexml?status.svg)](http://godoc.org/github.com/kylewolfe/simplexml) 
 =========
 
 simplexml provides a simple API to read, create and manipulate XML documents at run time in pure Go.
