@@ -3,13 +3,15 @@ package simplexml
 // Search is a slice of *Tag
 type Search []*Tag
 
-// ByName returns a Search of Tags that have a case sesnsitive match on Tag name alone, ignoring namespace.
+// ByName searches through the children Tags of each element in Search looking for case sensitive matches of Name and returns a new Search of the results. Namespace is ignored.
 func (se Search) ByName(s string) Search {
 	var r Search
 
 	for _, v := range se {
-		if v.Name == s {
-			r = append(r, v)
+		for _, v2 := range v.Tags() {
+			if v2.Name == s {
+				r = append(r, v2)
+			}
 		}
 	}
 

@@ -409,6 +409,11 @@ func (t Tag) Errors() []error {
 	return errs
 }
 
+// Search returns a new Search with the current Tag
+func (t *Tag) Search() Search {
+	return Search{t}
+}
+
 // NewTag returns a pointer to a new Tag with the given string
 func NewTag(name string) *Tag {
 	return &Tag{
