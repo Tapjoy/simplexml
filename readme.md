@@ -41,7 +41,7 @@ xmlString := `<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
 <foo>
 	<bar>bat</bar>
 	<baz/>
-	<fizz><![CDATA[&lt;cdata&gt;contents&lt;/cdata&gt;]]></fizz>
+	<fizz><![CDATA[&lt;foo&gt;contents&lt;/foo&gt;]]></fizz>
 </foo>
 </root>
 <!-- comment below root element -->`
@@ -52,10 +52,18 @@ if err != nil {
 	panic(err)
 }
 
-// get the root tag
-root := doc.Root()
+// get the fizz tag and value
+fizz := doc.Root().Search().ByName("foo").ByName("fizz").One()
+if fizz == nil {
+	panic("fizz is missing")
+}
 
-fmt.Println(len(root.Elements()))
+fv, err := fizz.Value()
+if err != nil {
+	panic(err)
+}
+
+fmt.Println("fizz: ", fv)
 //Output:
-//2
+//fizz:  <foo>contents</foo>
 ```
