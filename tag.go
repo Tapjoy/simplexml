@@ -249,6 +249,9 @@ func (t *Tag) AddNamespace(name string, value string) *Tag {
 	return t
 }
 
+/*
+TODO: Removed from scope of v0.1
+
 // XPath returns the Tag's XPath from it's root
 func (t Tag) XPath() XPath {
 	x := XPath{}
@@ -259,7 +262,7 @@ func (t Tag) XPath() XPath {
 
 	return append(x, t.Name)
 }
-
+*/
 // innerValue returns a string representation of the inner contents of a Tag
 func (t Tag) innerValue() string {
 	var s string
@@ -333,11 +336,13 @@ func (t Tag) String() string {
 }
 
 // Marshal is a wrapper for String() but returns a []byte, error to conform to the normal Marshaler interface.
-// An error will be returned if the doucment is malformed (returning the first result of Errors()).
 func (t *Tag) Marshal() ([]byte, error) {
 	t.setIndent("", "")
 	return []byte(t.String()), nil
 }
+
+/*
+TODO: Removed from scope of v0.1
 
 // UnmarshalStrict is a custom XML unmarshaller that behaves much like xml.Unmarshal with a few enahncements, including the return of a UnmarshalResult.
 func (t Tag) UnmarshalStrict(v interface{}) (UnmarshalResult, error) {
@@ -356,7 +361,6 @@ func (t Tag) Errors() []error {
 
 	// ensure a non Comment and Non Tag type do not coexist with a Tag type within the same Tag
 
-	/*
 			// scan all non Tag and non CDATA elements to determine if they should be CDATA
 			for _, v := range t.elements {
 				switch k := v.(type) {
@@ -404,10 +408,10 @@ func (t Tag) Errors() []error {
 		for _, v := range t.Tags() {
 			errs = append(errs, v.Errors()...)
 		}
-	*/
 
 	return errs
 }
+*/
 
 // Search returns a new Search with the current Tag
 func (t *Tag) Search() Search {
