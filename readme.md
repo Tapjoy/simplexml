@@ -5,7 +5,7 @@ simplexml provides a simple API to read, create and manipulate XML documents at 
 
 ## Stability
 
-simplxml underwent a major refactor for v0.1 in order to address comment support and a few other annoyances I had with the API. simplexml is now entering a more stable state as of v0.1. While trunk is not gaurenteed to be clear of breaking changes, they will be well documented moving forward, and tags will be avilable of older releases. Please remember to vendor your dependancies :)
+simplxml underwent a major refactor for v0.1 in order to address comment support and a few other annoyances I had with the API. simplexml is now entering a more stable state as of v0.1. While trunk is not guaranteed to be clear of breaking changes, they will be well documented moving forward, and tags will be available of older releases. Please remember to vendor your dependencies :)
 
 ## Usage
 
