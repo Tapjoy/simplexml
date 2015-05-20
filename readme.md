@@ -12,9 +12,9 @@ simplxml underwent a major refactor for v0.1 in order to address comment support
 ### From Scratch
 
 ```go
-root := NewTag("root") // a tag is an element that can contain other elements
-d := NewDocument(root) // a document can only contain one root tag
-d.AddBefore(NewComment("simplexml has support for comments outside of the root document"), root)
+root := NewTag("root")   // a tag is an element that can contain other elements
+doc := NewDocument(root) // a document can only contain one root tag
+doc.AddBefore(NewComment("simplexml has support for comments outside of the root document"), root)
 
 root.AddAfter(NewTag("foo"), nil)  // a nil pointer can be given to append to the end of all elements
 root.AddBefore(NewTag("bar"), nil) // or prepend before all elements
@@ -23,13 +23,39 @@ bat := NewTag("bat")
 bat.AddAfter(NewValue("bat value"), nil)
 root.AddAfter(bat, nil)
 
-b, err := d.Marshal() // a simplexml document implements the Marshaler interface
+b, err := doc.Marshal() // a simplexml document implements the Marshaler interface
 if err != nil {
 	panic(err)
 }
 fmt.Println(string(b))
+//Output:
+//<!--simplexml has support for comments outside of the root document--><root><bar/><foo/><bat>bat value</bat></root>
 ```
 
-```xml
-<!--simplexml has support for comments outside of the root document--><root><bar/><foo/><bat>bat value</bat></root>
+### From A Reader
+```go
+xmlString := `<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!-- comment above root element -->
+<root>
+<!-- <comment>above foo</comment> -->
+<foo>
+	<bar>bat</bar>
+	<baz/>
+	<fizz><![CDATA[&lt;cdata&gt;contents&lt;/cdata&gt;]]></fizz>
+</foo>
+</root>
+<!-- comment below root element -->`
+
+// create a document from a reader
+doc, err := NewDocumentFromReader(strings.NewReader(xmlString))
+if err != nil {
+	panic(err)
+}
+
+// get the root tag
+root := doc.Root()
+
+fmt.Println(len(root.Elements()))
+//Output:
+//2
 ```
