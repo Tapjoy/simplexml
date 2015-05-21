@@ -257,7 +257,7 @@ func ExampleNewDocumentFromReader() {
 	}
 
 	// get the fizz tag and value
-	fizz := doc.Root().Search().ByName("foo").ByName("fizz").One()
+	fizz := doc.Root().TagSearch().ByName("foo").ByName("fizz").One()
 	if fizz == nil {
 		panic("fizz is missing")
 	}

@@ -24,7 +24,7 @@ func TestByName(t *testing.T) {
 		root.AddAfter(foo, nil)
 		root.AddAfter(NewTag("bar"), nil)
 
-		s := Search{root}
+		s := TagSearch{root}
 
 		Convey("ByName(\"foo\") on root should return 1 result", func() {
 			So(len(s.ByName("foo")), ShouldEqual, 1)

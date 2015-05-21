@@ -413,9 +413,9 @@ func (t Tag) Errors() []error {
 }
 */
 
-// Search returns a new Search with the current Tag
-func (t *Tag) Search() Search {
-	return Search{t}
+// TagSearch returns a new TagSearch with the current Tag
+func (t *Tag) TagSearch() TagSearch {
+	return TagSearch{t}
 }
 
 // NewTag returns a pointer to a new Tag with the given string
