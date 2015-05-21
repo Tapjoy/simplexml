@@ -29,7 +29,7 @@ func (se TagSearch) One() *Tag {
 // AttributeSearch is a slice of *Attribute
 type AttributeSearch []*Attribute
 
-// ByName searches through the children Tags of each element in AttributeSearch looking for case sensitive matches of Name and returns a new AttributeSearch of the results. Namespace is ignored.
+// ByName searches through the slice of AttributeSearch looking for case sensitive matches of Name and returns a new AttributeSearch of the results. Namespace is ignored.
 func (se AttributeSearch) ByName(s string) AttributeSearch {
 	var r AttributeSearch
 
