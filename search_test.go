@@ -1,11 +1,12 @@
 package simplexml
 
 import (
-	. "github.com/smartystreets/goconvey/convey"
 	"testing"
+
+	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestByName(t *testing.T) {
+func TestTagSearch(t *testing.T) {
 	Convey("Given a simple document with multiple children and varying depths", t, func() {
 		root := NewTag("root")
 
@@ -26,6 +27,14 @@ func TestByName(t *testing.T) {
 
 		s := TagSearch{root}
 
+		Convey("ByName(\"Foo\") on root should return nil", func() {
+			So(s.ByName("Foo"), ShouldBeNil)
+
+			Convey("One() from this result should return nil", func() {
+				So(s.ByName("Foo").One(), ShouldBeNil)
+			})
+		})
+
 		Convey("ByName(\"foo\") on root should return 1 result", func() {
 			So(len(s.ByName("foo")), ShouldEqual, 1)
 		})
@@ -36,6 +45,36 @@ func TestByName(t *testing.T) {
 
 		Convey("ByName(\"foo\").ByName(\"foo_0\").ByName(\"foo_0_1\") should return 2 results", func() {
 			So(len(s.ByName("foo").ByName("foo_0").ByName("foo_0_1")), ShouldEqual, 2)
+
+			Convey("One() from this result should return a pointer to a Tag", func() {
+				So(s.ByName("foo").ByName("foo_0").ByName("foo_0_1").One(), ShouldHaveSameTypeAs, &Tag{})
+			})
+		})
+	})
+}
+
+func TestAttributeSearch(t *testing.T) {
+	Convey("Given a new AttributeSearch from a slice of attributes", t, func() {
+		as := AttributeSearch{
+			&Attribute{Prefix: "ns1", Name: "foo", Value: "fooval"},
+			&Attribute{Name: "foo2", Value: "foo2val"},
+			&Attribute{Name: "foo2", Value: "foo2val2"},
+		}
+
+		Convey("ByName(\"Foo\") should return nil", func() {
+			So(as.ByName("Foo"), ShouldBeNil)
+
+			Convey("One() from this result should return nil", func() {
+				So(as.ByName("Foo").One(), ShouldBeNil)
+			})
+		})
+
+		Convey("ByName(\"foo\") should return 1 result", func() {
+			So(len(as.ByName("foo")), ShouldEqual, 1)
+		})
+
+		Convey("ByName(\"foo2\") should return 2 results", func() {
+			So(len(as.ByName("foo2")), ShouldEqual, 2)
 		})
 	})
 }
