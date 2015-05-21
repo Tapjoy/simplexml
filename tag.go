@@ -418,6 +418,11 @@ func (t *Tag) TagSearch() TagSearch {
 	return TagSearch{t}
 }
 
+// AttributeSearch returns a new AttributeSearch with the current Tag
+func (t *Tag) AttributeSearch() AttributeSearch {
+	return t.Attributes
+}
+
 // NewTag returns a pointer to a new Tag with the given string
 func NewTag(name string) *Tag {
 	return &Tag{
