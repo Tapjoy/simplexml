@@ -36,7 +36,7 @@ type CDATA string
 
 // String implements the Stringer interface. String returns the html escaped value of Value wrapped the CDATA markup.
 func (c CDATA) String() string {
-	return fmt.Sprintf("<![CDATA[%s]]>", html.EscapeString(string(c)))
+	return fmt.Sprintf("<![CDATA[%s]]>", string(c))
 }
 
 // String implements the Stringer interface. String returns the html escaped value of Value wrapped the CDATA markup.
